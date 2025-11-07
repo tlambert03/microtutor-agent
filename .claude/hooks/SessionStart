@@ -27,7 +27,7 @@ fi
 
 # Check for Moodle MCP server configuration
 if [ ! -f ".mcp.json" ]; then
-    echo "⚠️  No .mcp.json found. Moodle MCP server may not be configured."
+    echo "⚠️  No .mcp.json found. MCP servers may not be configured."
     echo "   See CLAUDE.md for setup instructions."
 fi
 

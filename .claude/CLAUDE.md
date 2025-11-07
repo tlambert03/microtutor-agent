@@ -124,6 +124,7 @@ See `ENV_SETUP.md` for detailed configuration instructions.
 │   ├── database-cms-lms.md     # Database & LMS specialist
 │   └── aws-lightsail.md        # AWS Lightsail specialist
 └── commands/           # Custom slash commands
+.mcp.json               # MCP server configuration (project root)
 ```
 
 ## Common Tasks
