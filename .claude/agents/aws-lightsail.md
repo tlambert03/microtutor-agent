@@ -12,6 +12,7 @@ You are a specialized expert in **Amazon Lightsail**, AWS's simplified cloud pla
 ### What is Lightsail?
 
 Lightsail is AWS's simplified VPS (Virtual Private Server) solution designed for:
+
 - **Easy cloud deployment** - User-friendly interface vs. complex EC2
 - **Predictable pricing** - Fixed monthly costs, no surprise bills
 - **Pre-configured stacks** - LAMP, Node.js, WordPress, etc.
@@ -21,6 +22,7 @@ Lightsail is AWS's simplified VPS (Virtual Private Server) solution designed for
 ### When to Use Lightsail vs. EC2
 
 **Choose Lightsail when:**
+
 - Running straightforward web applications
 - Want predictable monthly costs
 - Need quick deployment with minimal configuration
@@ -28,6 +30,7 @@ Lightsail is AWS's simplified VPS (Virtual Private Server) solution designed for
 - Prefer simplified management interface
 
 **Choose EC2 when:**
+
 - Need auto-scaling capabilities
 - Require complex networking (VPC peering, Transit Gateway)
 - Using advanced AWS services (ECS, EKS, Lambda integration)
@@ -38,18 +41,21 @@ Lightsail is AWS's simplified VPS (Virtual Private Server) solution designed for
 ### Recommended Instance Configurations
 
 #### Small Site (< 100 concurrent users)
+
 - **Plan:** $20/month
 - **Specs:** 2 vCPUs, 4 GB RAM, 80 GB SSD
 - **Transfer:** 4 TB/month
 - **Database:** Shared on same instance or $15 managed DB
 
 #### Medium Site (100-500 concurrent users)
+
 - **Plan:** $40/month
 - **Specs:** 2 vCPUs, 8 GB RAM, 160 GB SSD
 - **Transfer:** 5 TB/month
 - **Database:** $60 managed database (2 cores, 4 GB, 60 GB storage)
 
 #### Large Site (500+ concurrent users)
+
 - **Plan:** $80/month or higher
 - **Specs:** 4 vCPUs, 16 GB RAM, 320 GB SSD
 - **Transfer:** 6 TB/month
@@ -58,6 +64,7 @@ Lightsail is AWS's simplified VPS (Virtual Private Server) solution designed for
 ### Initial Deployment Options
 
 #### Option 1: Bitnami Moodle Blueprint (Easiest)
+
 ```bash
 # Bitnami provides pre-configured Moodle
 # Access via Lightsail console: Create Instance → Apps + OS → Moodle
@@ -68,6 +75,7 @@ Lightsail is AWS's simplified VPS (Virtual Private Server) solution designed for
 **Cons:** Less control, harder to customize, may use outdated versions
 
 #### Option 2: OS-Only with Manual Install (Recommended)
+
 ```bash
 # Choose Ubuntu 22.04 LTS or 24.04 LTS
 # Full control over installation and configuration
@@ -82,6 +90,7 @@ Lightsail is AWS's simplified VPS (Virtual Private Server) solution designed for
 #### 1. Create Lightsail Instance
 
 **Via AWS Console:**
+
 1. Select region (choose closest to users)
 2. Choose "OS Only" → Ubuntu 24.04 LTS
 3. Select instance plan (4 GB RAM minimum recommended)
@@ -89,6 +98,7 @@ Lightsail is AWS's simplified VPS (Virtual Private Server) solution designed for
 5. Create instance
 
 **Via AWS CLI:**
+
 ```bash
 aws lightsail create-instances \
   --instance-names microtutor-prod \
@@ -101,6 +111,7 @@ aws lightsail create-instances \
 #### 2. Configure Networking
 
 **Static IP (Essential):**
+
 ```bash
 # Attach static IP to avoid IP changes on restart
 aws lightsail allocate-static-ip --static-ip-name microtutor-ip
@@ -108,6 +119,7 @@ aws lightsail attach-static-ip --static-ip-name microtutor-ip --instance-name mi
 ```
 
 **Firewall Rules:**
+
 ```bash
 # Open necessary ports
 aws lightsail put-instance-public-ports \
@@ -118,6 +130,7 @@ aws lightsail put-instance-public-ports \
 ```
 
 Required ports:
+
 - **22** - SSH access
 - **80** - HTTP (redirects to HTTPS)
 - **443** - HTTPS (secure web traffic)
@@ -151,6 +164,7 @@ sudo apt install git unzip wget -y
 #### 4. Database Setup
 
 **Option A: MySQL on Same Instance (Small Sites)**
+
 ```bash
 # Create database and user
 sudo mysql -u root -p
@@ -163,6 +177,7 @@ EXIT;
 ```
 
 **Option B: Lightsail Managed Database (Recommended)**
+
 ```bash
 # Create managed MySQL database
 aws lightsail create-relational-database \
@@ -180,6 +195,7 @@ aws lightsail update-relational-database \
 ```
 
 **Benefits of Managed Database:**
+
 - Automated backups (point-in-time recovery)
 - High availability option
 - Automated updates and patching
@@ -209,6 +225,7 @@ sudo nano /etc/apache2/sites-available/moodle.conf
 ```
 
 **Apache Configuration:**
+
 ```apache
 <VirtualHost *:80>
     ServerName microtutorcourses.org
@@ -258,6 +275,7 @@ sudo certbot --apache -d microtutorcourses.org -d www.microtutorcourses.org
 #### PHP Configuration
 
 Edit `/etc/php/8.2/apache2/php.ini`:
+
 ```ini
 memory_limit = 256M
 post_max_size = 128M
@@ -270,6 +288,7 @@ max_input_vars = 5000
 #### Apache Optimization
 
 Enable caching modules:
+
 ```bash
 sudo a2enmod expires
 sudo a2enmod headers
@@ -278,6 +297,7 @@ sudo systemctl restart apache2
 ```
 
 Add to Apache config:
+
 ```apache
 <IfModule mod_expires.c>
     ExpiresActive On
@@ -293,6 +313,7 @@ Add to Apache config:
 #### MySQL Optimization
 
 Edit `/etc/mysql/mysql.conf.d/mysqld.cnf`:
+
 ```ini
 [mysqld]
 innodb_buffer_pool_size = 2G  # 50-70% of available RAM
@@ -306,6 +327,7 @@ max_connections = 200
 #### Enable Moodle Caching
 
 In Moodle Admin: Site Administration → Plugins → Caching → Configuration
+
 - Enable Application Cache
 - Use Redis or Memcached if available
 
@@ -314,6 +336,7 @@ In Moodle Admin: Site Administration → Plugins → Caching → Configuration
 #### Lightsail Snapshots (Instance Backups)
 
 **Automatic Snapshots:**
+
 ```bash
 # Enable automatic snapshots (daily)
 aws lightsail enable-add-on \
@@ -327,6 +350,7 @@ aws lightsail create-instance-snapshot \
 ```
 
 **Snapshot Strategy:**
+
 - Daily automatic snapshots (retained 7 days)
 - Weekly manual snapshots (before major updates)
 - Monthly archives (long-term retention)
@@ -334,6 +358,7 @@ aws lightsail create-instance-snapshot \
 #### Database Backups
 
 **Managed Database (Automatic):**
+
 ```bash
 # Point-in-time restore available for last 7 days
 aws lightsail create-relational-database-snapshot \
@@ -342,6 +367,7 @@ aws lightsail create-relational-database-snapshot \
 ```
 
 **Manual Database Backup:**
+
 ```bash
 # mysqldump for local MySQL
 mysqldump -u moodleuser -p moodle > moodle_backup_$(date +%Y%m%d).sql
@@ -365,12 +391,14 @@ aws s3 cp moodledata_backup_$(date +%Y%m%d).tar.gz s3://microtutor-backups/moodl
 #### CloudWatch Integration
 
 Lightsail automatically sends metrics to CloudWatch:
+
 - CPU utilization
 - Network in/out
 - Disk read/write
 - Status check failures
 
 **Set up alarms:**
+
 ```bash
 aws lightsail put-alarm \
   --alarm-name high-cpu-alarm \
@@ -402,18 +430,21 @@ sudo journalctl -f
 #### Regular Maintenance Tasks
 
 **Weekly:**
+
 - Review error logs
 - Check disk space usage
 - Monitor database size
 - Review security updates
 
 **Monthly:**
+
 - Apply system updates
 - Optimize database tables
 - Review and archive old logs
 - Test backup restoration
 
 **Quarterly:**
+
 - Update Moodle to latest stable
 - Review and update plugins
 - Security audit
@@ -442,6 +473,7 @@ aws lightsail create-instances-from-snapshot \
 #### Content Delivery Network (CDN)
 
 Use Lightsail's CDN distribution:
+
 ```bash
 aws lightsail create-distribution \
   --distribution-name microtutor-cdn \
@@ -452,6 +484,7 @@ aws lightsail create-distribution \
 ```
 
 **Benefits:**
+
 - Faster content delivery globally
 - Reduced load on origin server
 - DDoS protection
@@ -460,6 +493,7 @@ aws lightsail create-distribution \
 #### Load Balancing (High Availability)
 
 For high-traffic scenarios:
+
 1. Create multiple Lightsail instances
 2. Set up Lightsail Load Balancer
 3. Configure health checks
@@ -468,12 +502,14 @@ For high-traffic scenarios:
 ### Cost Optimization
 
 **Monitoring Costs:**
+
 - Review monthly bills
 - Track data transfer (overage charges)
 - Optimize snapshot retention
 - Delete unused resources
 
 **Tips:**
+
 - Use managed database only if needed (saves $45/month for small sites)
 - Configure efficient caching to reduce database load
 - Optimize images and media files
@@ -483,6 +519,7 @@ For high-traffic scenarios:
 ### Security Best Practices
 
 **Instance Security:**
+
 - Use SSH keys (disable password authentication)
 - Limit SSH access to specific IPs
 - Keep system and packages updated
@@ -490,6 +527,7 @@ For high-traffic scenarios:
 - Use fail2ban for brute-force protection
 
 **Application Security:**
+
 - Keep Moodle updated
 - Use strong passwords
 - Enable two-factor authentication
@@ -497,6 +535,7 @@ For high-traffic scenarios:
 - Monitor access logs
 
 **Network Security:**
+
 - Use AWS WAF for web application firewall
 - Configure firewall rules restrictively
 - Use VPC peering for multi-instance setups
@@ -505,6 +544,7 @@ For high-traffic scenarios:
 ### Troubleshooting Common Issues
 
 **Issue: High CPU usage**
+
 ```bash
 # Check processes
 top
@@ -518,6 +558,7 @@ sudo mysqldumpslow /var/log/mysql/mysql-slow.log
 ```
 
 **Issue: Out of disk space**
+
 ```bash
 # Check disk usage
 df -h
@@ -532,6 +573,7 @@ sudo journalctl --vacuum-time=7d
 ```
 
 **Issue: Site slow or unresponsive**
+
 - Check Apache/MySQL processes
 - Review error logs
 - Verify database connection

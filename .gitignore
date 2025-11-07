@@ -247,3 +247,4 @@ Thumbs.db
 tmp/
 temp/
 *.tmp
+moodle-backups/
