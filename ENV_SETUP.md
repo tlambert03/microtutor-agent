@@ -161,6 +161,94 @@ us-east-1
 
 ---
 
+### AWS MCP Server Configuration (Optional)
+
+The AWS MCP servers provide AI-powered access to AWS services and documentation. Two servers are available:
+
+#### 7. AWS_PROFILE
+
+**Description:** AWS credential profile to use for API operations.
+
+**Default:** `default`
+
+**Format:**
+```
+default
+```
+
+**How to configure:**
+- AWS credentials are typically stored in `~/.aws/credentials` and `~/.aws/config`
+- If you have multiple AWS profiles, specify which one to use
+- The MCP server defaults to the `default` profile
+
+---
+
+#### 8. AWS_REGION
+
+**Description:** AWS region for API operations (used by AWS MCP server).
+
+**Default:** `us-east-1`
+
+**Common values:**
+- `us-east-1` (N. Virginia)
+- `us-west-2` (Oregon)
+- `eu-west-1` (Ireland)
+- `ap-southeast-1` (Singapore)
+
+**Note:** This can be the same as `AWS_DEFAULT_REGION` or different if you want to separate CLI operations from MCP operations.
+
+---
+
+#### 9. ALLOW_WRITE
+
+**Description:** Enable write operations through the AWS MCP server.
+
+**Default:** `false`
+
+**Security consideration:** Only set to `true` if you need to create, modify, or delete AWS resources through the MCP server. For read-only operations (safer), keep it `false`.
+
+**Format:**
+```
+false  # Read-only mode (recommended)
+true   # Enable write operations (use with caution)
+```
+
+---
+
+### AWS MCP Server Features
+
+The repository is configured with two AWS MCP servers:
+
+**1. AWS API MCP Server** (`aws-api`)
+- Programmatic access to AWS services
+- Supports Lightsail, EC2, EBS, and other AWS APIs
+- Requires AWS credentials (`AWS_PROFILE` or `AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY`)
+- Command validation and security controls
+- Uses `uvx` to run the latest version
+
+**2. AWS Knowledge MCP Server** (`aws-knowledge`)
+- Fully managed by AWS (remote service)
+- Real-time access to AWS documentation
+- API references and architectural guides
+- AWS What's New posts and Well-Architected guidance
+- No local installation or credentials required
+- Accessed via HTTPS endpoint
+
+#### Supported AWS Services (via AWS API MCP)
+
+Relevant for Lightsail/Moodle deployment:
+- **Lightsail:** Instance management, snapshots, static IPs, networking
+- **EC2:** Virtual machines, security groups, key pairs
+- **EBS:** Block storage volumes, snapshots
+- **RDS:** Managed databases (alternative to Lightsail DB)
+- **Route 53:** DNS management
+- **CloudWatch:** Monitoring and logging
+- **S3:** Object storage for backups
+- **IAM:** User and permission management
+- **CloudFormation:** Infrastructure as code
+
+---
+
 ## Setting Environment Variables
 
 ### For Claude Code Web
@@ -176,12 +264,20 @@ Add environment variables to your session environment:
 
 **Variables to add:**
 ```
+# Required for Moodle MCP Server
 MOODLE_API_URL=https://microtutorcourses.org/webservice/rest/server.php
 MOODLE_API_TOKEN=your_actual_token_here
 MOODLE_COURSE_ID=123
-AWS_ACCESS_KEY_ID=your_aws_key_here (optional)
-AWS_SECRET_ACCESS_KEY=your_aws_secret_here (optional)
-AWS_DEFAULT_REGION=us-east-1 (optional)
+
+# Optional for AWS CLI operations
+AWS_ACCESS_KEY_ID=your_aws_key_here
+AWS_SECRET_ACCESS_KEY=your_aws_secret_here
+AWS_DEFAULT_REGION=us-east-1
+
+# Optional for AWS MCP Server
+AWS_PROFILE=default
+AWS_REGION=us-east-1
+ALLOW_WRITE=false
 ```
 
 ### For Local Development
@@ -196,10 +292,15 @@ MOODLE_API_URL=https://microtutorcourses.org/webservice/rest/server.php
 MOODLE_API_TOKEN=your_actual_token_here
 MOODLE_COURSE_ID=123
 
-# AWS Credentials (optional)
+# AWS Credentials (for CLI operations)
 AWS_ACCESS_KEY_ID=your_aws_key_here
 AWS_SECRET_ACCESS_KEY=your_aws_secret_here
 AWS_DEFAULT_REGION=us-east-1
+
+# AWS MCP Server Configuration (optional)
+AWS_PROFILE=default
+AWS_REGION=us-east-1
+ALLOW_WRITE=false
 ```
 
 Then load them in your shell:
@@ -239,6 +340,25 @@ aws sts get-caller-identity
 
 # List Lightsail instances
 aws lightsail get-instances
+```
+
+### Test AWS MCP Server
+
+The AWS MCP servers will be automatically loaded when you start a Claude Code Web session.
+
+**AWS API MCP Server** requires:
+- Either `AWS_PROFILE` set to a valid profile in `~/.aws/credentials`
+- Or `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` environment variables
+
+**AWS Knowledge MCP Server** requires no configuration - it's a fully managed remote service.
+
+To verify the AWS API MCP server can authenticate:
+```bash
+# Check if AWS credentials are available
+aws configure list
+
+# Verify the profile exists
+cat ~/.aws/credentials | grep -A 2 "\[default\]"
 ```
 
 ---
@@ -283,6 +403,29 @@ aws lightsail get-instances
 - Attach `AmazonLightsailFullAccess` policy to IAM user
 - Verify correct region in `AWS_DEFAULT_REGION`
 
+### AWS MCP Server not working
+
+**Possible causes:**
+1. `uvx` (uv) not installed - required for AWS API MCP server
+2. AWS credentials not configured
+3. Invalid AWS profile name
+4. Network connectivity issues for AWS Knowledge MCP
+
+**Solutions:**
+- Install `uv` package manager: `pip install uv` or `curl -LsSf https://astral.sh/uv/install.sh | sh`
+- Verify AWS credentials: `aws configure list`
+- Check profile exists: `cat ~/.aws/credentials`
+- For AWS Knowledge MCP, verify internet connectivity to `aws-knowledge-mcp.amazon.com`
+
+### "ALLOW_WRITE is false" message
+
+**Expected behavior:** The AWS API MCP server defaults to read-only mode for safety.
+
+**To enable writes:**
+- Set `ALLOW_WRITE=true` environment variable
+- Only do this if you need to create/modify/delete AWS resources
+- Use with caution in production environments
+
 ---
 
 ## Security Best Practices
@@ -299,22 +442,32 @@ aws lightsail get-instances
 
 ## Quick Reference
 
-**Minimum required for MCP:**
+**Minimum required for Moodle MCP:**
 ```bash
 MOODLE_API_URL=https://microtutorcourses.org/webservice/rest/server.php
 MOODLE_API_TOKEN=<your-token>
 MOODLE_COURSE_ID=<course-id>
 ```
 
-**Full set for AWS deployment:**
+**Full set with AWS CLI + AWS MCP servers:**
 ```bash
+# Moodle MCP Server
 MOODLE_API_URL=https://microtutorcourses.org/webservice/rest/server.php
 MOODLE_API_TOKEN=<your-token>
 MOODLE_COURSE_ID=<course-id>
+
+# AWS CLI (for direct AWS operations)
 AWS_ACCESS_KEY_ID=<your-key>
 AWS_SECRET_ACCESS_KEY=<your-secret>
 AWS_DEFAULT_REGION=us-east-1
+
+# AWS MCP Server (optional - for AI-powered AWS access)
+AWS_PROFILE=default
+AWS_REGION=us-east-1
+ALLOW_WRITE=false
 ```
+
+**Note:** AWS Knowledge MCP server requires no configuration - it's fully managed by AWS.
 
 ---
 
@@ -323,4 +476,6 @@ AWS_DEFAULT_REGION=us-east-1
 - [Moodle Web Services Documentation](https://docs.moodle.org/dev/Web_services)
 - [Moodle MCP Server GitHub](https://github.com/peancor/moodle-mcp-server)
 - [AWS Lightsail Documentation](https://docs.aws.amazon.com/lightsail/)
+- [AWS MCP Servers](https://github.com/awslabs/mcp)
+- [AWS MCP Servers Documentation](https://awslabs.github.io/mcp/)
 - [Claude Code Web Docs](https://code.claude.com/docs/en/claude-code-on-the-web)

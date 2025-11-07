@@ -14,20 +14,26 @@ This repository provides Claude Code with specialized knowledge and tools to wor
 
 ### 1. Environment Setup
 
-Set up required environment variables for the Moodle MCP server. See [ENV_SETUP.md](ENV_SETUP.md) for detailed instructions.
+Set up required environment variables for the MCP servers. See [ENV_SETUP.md](ENV_SETUP.md) for detailed instructions.
 
-**Required variables:**
+**Required for Moodle MCP:**
 ```bash
 MOODLE_API_URL=https://microtutorcourses.org/webservice/rest/server.php
 MOODLE_API_TOKEN=<your-token>
 MOODLE_COURSE_ID=<course-id>
 ```
 
-**Optional (for AWS deployment):**
+**Optional for AWS operations:**
 ```bash
+# For AWS CLI
 AWS_ACCESS_KEY_ID=<your-key>
 AWS_SECRET_ACCESS_KEY=<your-secret>
 AWS_DEFAULT_REGION=us-east-1
+
+# For AWS MCP Server
+AWS_PROFILE=default
+AWS_REGION=us-east-1
+ALLOW_WRITE=false
 ```
 
 ### 2. Using with Claude Code Web
@@ -50,7 +56,7 @@ AWS_DEFAULT_REGION=us-east-1
 │       ├── moodle-expert.md         # Moodle API and development specialist
 │       ├── database-cms-lms.md      # Database and LMS operations expert
 │       └── aws-lightsail.md         # AWS Lightsail deployment specialist
-├── .mcp.json                        # Moodle MCP server configuration
+├── .mcp.json                        # MCP servers configuration (Moodle + AWS)
 ├── ENV_SETUP.md                     # Environment variables guide
 ├── README.md                        # This file
 └── .gitignore                       # Ignore sensitive files
@@ -121,6 +127,33 @@ The `.mcp.json` configuration enables Claude to interact directly with your Mood
 - `get_quiz_attempts` - View quiz performance
 - `provide_quiz_feedback` - Comment on quiz attempts
 
+### AWS MCP Servers Integration
+
+Two AWS MCP servers are configured to provide AI-powered AWS capabilities:
+
+**AWS API MCP Server:**
+- Programmatic access to AWS services (Lightsail, EC2, EBS, S3, RDS, etc.)
+- Command validation and security controls
+- Read-only by default (set `ALLOW_WRITE=true` for write operations)
+- Supports infrastructure management, deployments, and monitoring
+
+**AWS Knowledge MCP Server:**
+- Fully managed by AWS (remote service)
+- Real-time AWS documentation and API references
+- Well-Architected Framework guidance
+- AWS What's New posts and best practices
+- No local installation or credentials required
+
+**Supported AWS Services for Lightsail deployment:**
+- Lightsail instance management, snapshots, networking
+- EC2 virtual machines and security groups
+- EBS volumes and snapshots
+- RDS managed databases
+- Route 53 DNS management
+- CloudWatch monitoring
+- S3 object storage
+- IAM permissions and users
+
 ## Common Tasks
 
 ### Course Development
@@ -165,7 +198,8 @@ The `.mcp.json` configuration enables Claude to interact directly with your Mood
 - **H5P** - Interactive content
 - **Video.js** - Media playback
 - **MathJax** - Mathematical notation
-- **Moodle MCP Server** - AI integration
+- **Moodle MCP Server** - AI integration for course management
+- **AWS MCP Servers** - AI-powered AWS service access and documentation
 
 ## Best Practices
 
@@ -202,6 +236,8 @@ The `.mcp.json` configuration enables Claude to interact directly with your Mood
 
 ### Tools
 - [Moodle MCP Server](https://github.com/peancor/moodle-mcp-server)
+- [AWS MCP Servers](https://github.com/awslabs/mcp)
+- [AWS MCP Documentation](https://awslabs.github.io/mcp/)
 - [H5P Documentation](https://h5p.org/documentation)
 - [Bitnami Moodle Stack](https://bitnami.com/stack/moodle)
 
@@ -224,6 +260,9 @@ See [ENV_SETUP.md](ENV_SETUP.md) for detailed troubleshooting steps.
 
 **Issue:** AWS CLI commands failing
 - **Solution:** Check AWS credentials and region are configured properly
+
+**Issue:** AWS MCP Server not working
+- **Solution:** Ensure `uv` is installed (`pip install uv`), verify AWS credentials with `aws configure list`, and check `AWS_PROFILE` or `AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY` are set
 
 ## Contributing
 

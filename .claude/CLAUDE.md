@@ -31,6 +31,7 @@ This repository serves as a dedicated Claude Code Web agent for developing and m
 
 ### Development Tools
 - **Moodle MCP Server** - AI integration for course management
+- **AWS MCP Servers** - AI-powered AWS service access and documentation
 - **Git/GitHub** - Version control
 - **Claude Code Web** - AI-assisted development
 
@@ -72,13 +73,35 @@ Moodle exposes REST-like web services for:
 
 ## MCP Server Integration
 
-The Moodle MCP server enables Claude to interact directly with the Moodle platform for:
+This repository is configured with multiple MCP servers for enhanced AI capabilities:
+
+### Moodle MCP Server
+Enables Claude to interact directly with the Moodle platform for:
 - Listing enrolled students
 - Managing assignments and submissions
 - Providing feedback and grades
 - Handling quizzes and attempts
 
-Required environment variables are configured in SessionStart hook.
+**Required environment variables:** `MOODLE_API_URL`, `MOODLE_API_TOKEN`, `MOODLE_COURSE_ID`
+
+### AWS MCP Servers
+
+**AWS API MCP Server:**
+- Programmatic access to AWS services (Lightsail, EC2, EBS, S3, etc.)
+- Command validation and security controls
+- Read-only by default (configurable with `ALLOW_WRITE`)
+- Supports infrastructure management and deployment tasks
+
+**AWS Knowledge MCP Server:**
+- Fully managed by AWS (remote service)
+- Real-time AWS documentation and API references
+- Well-Architected Framework guidance
+- AWS What's New posts and blog content
+- No configuration required
+
+**Required environment variables:** `AWS_PROFILE` or `AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY`, `AWS_REGION`
+
+See `ENV_SETUP.md` for detailed configuration instructions.
 
 ## Security Considerations
 
@@ -134,6 +157,8 @@ Required environment variables are configured in SessionStart hook.
 - [Moodle Developer Docs](https://moodledev.io/)
 - [Moodle API Guides](https://moodledev.io/docs/5.0/apis)
 - [AWS Lightsail Documentation](https://docs.aws.amazon.com/lightsail/)
+- [AWS MCP Servers](https://github.com/awslabs/mcp)
+- [AWS MCP Documentation](https://awslabs.github.io/mcp/)
 - [Claude Code Best Practices](https://www.anthropic.com/engineering/claude-code-best-practices)
 - [Moodle MCP Server](https://github.com/peancor/moodle-mcp-server)
 
