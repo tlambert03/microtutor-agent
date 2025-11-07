@@ -1,0 +1,32 @@
+{
+  "mcpServers": {
+    "moodle": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@peancor/moodle-mcp-server"
+      ],
+      "env": {
+        "MOODLE_API_URL": "${MOODLE_API_URL}",
+        "MOODLE_API_TOKEN": "${MOODLE_API_TOKEN}",
+        "MOODLE_COURSE_ID": "${MOODLE_COURSE_ID}"
+      }
+    },
+    "aws-api": {
+      "command": "uvx",
+      "args": [
+        "awslabs.aws-api-mcp-server@latest"
+      ],
+      "env": {
+        "AWS_PROFILE": "${AWS_PROFILE:-default}",
+        "AWS_REGION": "${AWS_REGION:-us-east-1}",
+        "ALLOW_WRITE": "${ALLOW_WRITE:-false}",
+        "FASTMCP_LOG_LEVEL": "ERROR"
+      }
+    },
+    "aws-knowledge": {
+      "url": "https://aws-knowledge-mcp.amazon.com/sse",
+      "transport": "sse"
+    }
+  }
+}

@@ -1,0 +1,65 @@
+#!/bin/bash
+
+# SessionStart Hook for MicroTutor Agent
+# This script runs at the beginning of each Claude Code Web session
+# to set up the development environment for microtutorcourses.org
+
+set -e
+
+echo "🚀 Initializing MicroTutor development environment..."
+
+# Check if we're in the correct directory
+if [ ! -f ".claude/CLAUDE.md" ]; then
+    echo "⚠️  Warning: CLAUDE.md not found. Are you in the microtutor-agent directory?"
+fi
+
+# Install or update Node.js dependencies if package.json exists
+if [ -f "package.json" ]; then
+    echo "📦 Installing Node.js dependencies..."
+    npm install --quiet 2>&1 | grep -v "^npm WARN" || true
+fi
+
+# Install Python dependencies if requirements.txt exists
+if [ -f "requirements.txt" ]; then
+    echo "🐍 Installing Python dependencies..."
+    pip install -q -r requirements.txt
+fi
+
+# Check for Moodle MCP server configuration
+if [ ! -f ".mcp.json" ]; then
+    echo "⚠️  No .mcp.json found. Moodle MCP server may not be configured."
+    echo "   See CLAUDE.md for setup instructions."
+fi
+
+# Verify environment variables for Moodle MCP server
+if [ -z "$MOODLE_API_URL" ]; then
+    echo "⚠️  MOODLE_API_URL not set. Required for Moodle MCP server."
+fi
+
+if [ -z "$MOODLE_API_TOKEN" ]; then
+    echo "⚠️  MOODLE_API_TOKEN not set. Required for Moodle MCP server."
+fi
+
+if [ -z "$MOODLE_COURSE_ID" ]; then
+    echo "⚠️  MOODLE_COURSE_ID not set. Required for Moodle MCP server."
+fi
+
+# Check for AWS credentials if working with Lightsail
+if [ -z "$AWS_ACCESS_KEY_ID" ] || [ -z "$AWS_SECRET_ACCESS_KEY" ]; then
+    echo "ℹ️  AWS credentials not configured. Set if deploying to Lightsail."
+fi
+
+# Display available tools
+echo ""
+echo "✅ Environment setup complete!"
+echo ""
+echo "Available specialized agents:"
+echo "  - .claude/agents/moodle-expert.md - Moodle API & development"
+echo "  - .claude/agents/database-cms-lms.md - Database & LMS operations"
+echo "  - .claude/agents/aws-lightsail.md - AWS Lightsail deployment"
+echo ""
+echo "Quick reference:"
+echo "  - Project docs: .claude/CLAUDE.md"
+echo "  - Moodle site: https://microtutorcourses.org"
+echo "  - Moodle docs: https://moodledev.io/"
+echo ""
