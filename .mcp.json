@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "moodle": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@peancor/moodle-mcp-server"
+      ],
+      "env": {
+        "MOODLE_API_URL": "${MOODLE_API_URL}",
+        "MOODLE_API_TOKEN": "${MOODLE_API_TOKEN}",
+        "MOODLE_COURSE_ID": "${MOODLE_COURSE_ID}"
+      }
+    }
+  }
+}
