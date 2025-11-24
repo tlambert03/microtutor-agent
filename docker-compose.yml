@@ -1,0 +1,79 @@
+version: '3.8'
+
+services:
+  # MySQL/MariaDB Database
+  db:
+    image: mariadb:10.11
+    container_name: moodle_db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${LOCAL_MYSQL_ROOT_PASSWORD:-moodlepass}
+      MYSQL_DATABASE: ${LOCAL_DB_NAME:-moodle_local}
+      MYSQL_USER: ${LOCAL_DB_USER:-moodleuser}
+      MYSQL_PASSWORD: ${LOCAL_DB_PASSWORD:-moodlepass}
+      MYSQL_CHARACTER_SET_SERVER: utf8mb4
+      MYSQL_COLLATION_SERVER: utf8mb4_unicode_ci
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./backups:/backups
+    ports:
+      - "3306:3306"
+    networks:
+      - moodle_network
+    command: >
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --default-authentication-plugin=mysql_native_password
+      --max_allowed_packet=64M
+      --innodb_file_format=Barracuda
+      --innodb_file_per_table=1
+      --innodb_large_prefix=1
+
+  # PHP-FPM with Apache for Moodle
+  web:
+    build: .
+    container_name: moodle_web
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      MOODLE_DATABASE_TYPE: mariadb
+      MOODLE_DATABASE_HOST: db
+      MOODLE_DATABASE_PORT_NUMBER: 3306
+      MOODLE_DATABASE_NAME: ${LOCAL_DB_NAME:-moodle_local}
+      MOODLE_DATABASE_USER: ${LOCAL_DB_USER:-moodleuser}
+      MOODLE_DATABASE_PASSWORD: ${LOCAL_DB_PASSWORD:-moodlepass}
+    volumes:
+      - ./local-moodle:/var/www/html
+      - ./local-moodledata:/var/moodledata
+      - ./php-config/php.ini:/usr/local/etc/php/php.ini
+    ports:
+      - "${MOODLE_PORT:-8080}:80"
+    networks:
+      - moodle_network
+
+  # PHPMyAdmin for database management
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: moodle_phpmyadmin
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      PMA_USER: ${LOCAL_DB_USER:-moodleuser}
+      PMA_PASSWORD: ${LOCAL_DB_PASSWORD:-moodlepass}
+      UPLOAD_LIMIT: 64M
+    ports:
+      - "${PHPMYADMIN_PORT:-8081}:80"
+    networks:
+      - moodle_network
+
+volumes:
+  db_data:
+    driver: local
+
+networks:
+  moodle_network:
+    driver: bridge

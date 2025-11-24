@@ -61,13 +61,13 @@ LIGHTSAIL_USER="${MOODLE_LIGHTSAIL_USER:-ubuntu}"
 LIGHTSAIL_SSH_KEY="${MOODLE_SSH_KEY:-}"
 
 # Remote Moodle paths (on Lightsail instance)
-REMOTE_MOODLE_DIR="${MOODLE_REMOTE_DIR:-}"
-REMOTE_MOODLEDATA_DIR="${MOODLE_REMOTE_DATA_DIR:-}"
+REMOTE_MOODLE_DIR="${MOODLE_REMOTE_DIR:-/var/www/html/moodle}"
+REMOTE_MOODLEDATA_DIR="${MOODLE_REMOTE_DATA_DIR:-/var/www/moodledata}"
 REMOTE_TMP_DIR="${MOODLE_REMOTE_TMP_DIR:-/tmp/moodle_backup}"
 
 # Database credentials (on remote server)
-DB_NAME="${MOODLE_DB_NAME:-}"
-DB_USER="${MOODLE_DB_USER:-}"
+DB_NAME="${MOODLE_DB_NAME:-moodle}"
+DB_USER="${MOODLE_DB_USER:-moodleuser}"
 DB_PASSWORD="${MOODLE_DB_PASSWORD:-}"
 DB_HOST="${MOODLE_DB_HOST:-localhost}"
 
@@ -273,7 +273,7 @@ backup_moodle_code() {
     rsync $RSYNC_OPTIONS \
         -e "ssh -i $LIGHTSAIL_SSH_KEY $SSH_OPTIONS" \
         --exclude='.git' \
-        --exclude='cache' \
+        --exclude='/cache' \
         "$LIGHTSAIL_USER@$LIGHTSAIL_IP:$REMOTE_MOODLE_DIR/" \
         "$LOCAL_BACKUP_PATH/moodle/"
 
@@ -288,11 +288,11 @@ backup_moodledata() {
 
     rsync $RSYNC_OPTIONS \
         -e "ssh -i $LIGHTSAIL_SSH_KEY $SSH_OPTIONS" \
-        --exclude='cache' \
-        --exclude='localcache' \
-        --exclude='sessions' \
-        --exclude='temp' \
-        --exclude='trashdir' \
+        --exclude='/cache' \
+        --exclude='/localcache' \
+        --exclude='/sessions' \
+        --exclude='/temp' \
+        --exclude='/trashdir' \
         "$LIGHTSAIL_USER@$LIGHTSAIL_IP:$REMOTE_MOODLEDATA_DIR/" \
         "$LOCAL_BACKUP_PATH/moodledata/"
 

@@ -235,6 +235,12 @@ id_rsa*
 moodledata/
 config.php
 
+# Local development environment
+local-moodle/
+local-moodledata/
+php-config/php.ini
+backups/
+
 # OS specific
 Thumbs.db
 .DS_Store
